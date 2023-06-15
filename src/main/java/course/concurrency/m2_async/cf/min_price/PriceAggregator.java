@@ -1,7 +1,11 @@
 package course.concurrency.m2_async.cf.min_price;
 
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 public class PriceAggregator {
 
@@ -18,7 +22,24 @@ public class PriceAggregator {
     }
 
     public double getMinPrice(long itemId) {
-        // place for your code
-        return 0;
+        Executor executor;
+        int taskLimit = 100;
+        boolean isTooMuchTasks = shopIds.size() > taskLimit;
+        if (isTooMuchTasks) {
+            executor = Executors.newFixedThreadPool(shopIds.size());
+        } else {
+            executor = Executors.newCachedThreadPool();
+        }
+
+        List<CompletableFuture<Double>> pricesResult = shopIds.stream()
+                .map(shopId -> supplyAsync(() -> priceRetriever.getPrice(itemId, shopId), executor)
+                        .completeOnTimeout(Double.NaN, 2800, TimeUnit.MILLISECONDS)
+                        .exceptionally(ex -> Double.NaN))
+                .collect(Collectors.toList());
+
+        return pricesResult.stream()
+                .map(CompletableFuture::join)
+                .min(Comparator.comparingDouble(i -> i))
+                .orElse(Double.NaN);
     }
 }
