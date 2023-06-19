@@ -2,13 +2,13 @@ package course.concurrency.m2_async.cf.min_price;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 public class PriceAggregator {
 
+    private static final int PRICE_RETRIEVING_TIMEOUT = 2900;
     private PriceRetriever priceRetriever = new PriceRetriever();
 
     public void setPriceRetriever(PriceRetriever priceRetriever) {
@@ -33,7 +33,7 @@ public class PriceAggregator {
 
         List<CompletableFuture<Double>> pricesResult = shopIds.stream()
                 .map(shopId -> supplyAsync(() -> priceRetriever.getPrice(itemId, shopId), executor)
-                        .completeOnTimeout(Double.NaN, 2800, TimeUnit.MILLISECONDS)
+                        .completeOnTimeout(Double.NaN, PRICE_RETRIEVING_TIMEOUT, TimeUnit.MILLISECONDS)
                         .exceptionally(ex -> Double.NaN))
                 .collect(Collectors.toList());
 
