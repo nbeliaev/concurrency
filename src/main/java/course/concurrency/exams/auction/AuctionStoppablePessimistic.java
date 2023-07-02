@@ -2,7 +2,7 @@ package course.concurrency.exams.auction;
 
 public class AuctionStoppablePessimistic implements AuctionStoppable {
 
-    private Notifier notifier;
+    private final Notifier notifier;
 
     public AuctionStoppablePessimistic(Notifier notifier) {
         this.notifier = notifier;
