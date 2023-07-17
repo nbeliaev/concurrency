@@ -29,11 +29,8 @@ public final class Order {
         this.status = status;
     }
 
-    public synchronized boolean checkStatus() {
-        if (items != null && !items.isEmpty() && paymentInfo != null && isPacked) {
-            return true;
-        }
-        return false;
+    public boolean checkStatus() {
+        return paymentInfo != null && isPacked;
     }
 
     public Long getId() {
