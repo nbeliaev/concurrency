@@ -62,9 +62,6 @@ public final class Order {
     }
 
     public Order delivered() {
-        if (isDelivered()) {
-            throw new IllegalStateException(String.format("Order %s is already delivered", id));
-        }
         return new Order(id, items, paymentInfo, isPacked, DELIVERED);
     }
 

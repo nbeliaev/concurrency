@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class OrderService {
 
@@ -22,7 +23,7 @@ public class OrderService {
     }
 
     public void updatePaymentInfo(long orderId, PaymentInfo paymentInfo) {
-        currentOrders.computeIfPresent(orderId, (k ,order) -> order.paid(paymentInfo));
+        currentOrders.computeIfPresent(orderId, (k, order) -> order.paid(paymentInfo));
         if (currentOrders.get(orderId).checkStatus()) {
             deliver(currentOrders.get(orderId));
         }
@@ -37,7 +38,12 @@ public class OrderService {
 
     private void deliver(Order order) {
         /* ... */
-        currentOrders.computeIfPresent(order.getId(), (k, o) -> o.delivered());
+        currentOrders.computeIfPresent(order.getId(), (k, o) -> {
+            if (o.isDelivered()) {
+                throw new IllegalStateException(String.format("Order %s is already delivered", order.getId()));
+            }
+            return o.delivered();
+        });
     }
 
     public boolean isDelivered(long orderId) {
